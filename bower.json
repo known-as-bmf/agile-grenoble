@@ -1,0 +1,30 @@
+{
+  "name": "agile-grenoble",
+  "version": "0.0.0",
+  "dependencies": {
+    "angular-ui-router": "^0.4.2",
+    "angular": "~1.4.8",
+    "font-awesome": "*",
+    "foundation-sites": "^6.3.1"
+  },
+  "overrides": {
+    "bootstrap": {
+      "main": [
+        "less/bootstrap.less",
+        "dist/css/bootstrap.css",
+        "dist/js/bootstrap.js"
+      ]
+    },
+    "foundation-sites": {
+      "main": [
+        "dist/css/foundation.css",
+        "dist/js/foundation.js"
+      ]
+    },
+    "font-awesome": {
+      "main": [
+        "css/font-awesome.css"
+      ]
+    }
+  }
+}
