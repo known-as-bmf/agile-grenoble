@@ -1,14 +1,10 @@
 angular
   .module('app', [
+    'ui.router',
     'app.pages',
     'app.templates',
-    'ui.router'
+    'pascalprecht.translate'
   ])
   .config(($urlRouterProvider: ng.ui.IUrlRouterProvider) => {
     $urlRouterProvider.otherwise('/home');
   });
-
-angular
-  .module('app.pages', [
-    'ui.router'
-  ]);
