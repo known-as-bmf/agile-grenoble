@@ -13,6 +13,7 @@ var rename = require('gulp-rename');
 var sass = require('gulp-sass');
 var sourceMaps = require('gulp-sourcemaps');
 var templateCache = require('gulp-angular-templatecache');
+var through = require('through2');
 var ts = require('gulp-typescript');
 var tslint = require('gulp-tslint');
 var uglify = require('gulp-uglify');
@@ -88,12 +89,18 @@ gulp.task('inject', ['scripts', 'cssNano'], function () {
     ignorePath: '../../public'
   };
 
-  return gulp.src('./public/*.html')
+  return gulp.src('public/*.html')
     .pipe(wiredep(options))
     .pipe(inject(injectSrc, injectOptions))
-    .pipe(gulp.dest('./public'));
+    .pipe(gulp.dest('public'));
 
 });
+
+gulp.task('i18n', function () {
+  return gulp.src('public/src/**/i18n/*.json')
+    .pipe(i18n())
+    .pipe(gulp.dest('public/dist/i18n'))
+})
 
 gulp.task('compile', ['lint', 'scripts', 'sass', 'concatCss', 'cssNano']);
 gulp.task('compile-w', ['compile'], function (done) {
@@ -111,6 +118,8 @@ gulp.task('serve', ['build'], function () {
 
   // watch
   gulp.watch(['public/src/**/*(*.ts|*.html|*.scss)'], ['compile-w']);
+
+  // TODO: add a watch for each file type and trigger reload by browsersync options
 });
 
 // Default Task
@@ -128,4 +137,39 @@ function prepareTemplates() {
       standalone: true,
       templateHeader: _.unescape(encodedHeader)
     }));
+}
+
+// see https://github.com/baijunjie/gulp-i18n-combine/blob/master/index.js
+// TODO: make it a gulp module
+// rename "merge-same-name" ?
+function i18n() {
+
+  var tmp = [];
+
+  // parse input files (a list of many <locale>.json)
+  // from a glob like 'public/**/i18n/*.json'
+  var parse = function (file, enc, done) {
+    // ignore empty files and streams
+    if (file.isNull() || file.isStream()) {
+      done();
+      return;
+    }
+
+    tmp.push(file);
+
+    done();
+  }
+
+  // output files (1 <locale>.json per locale)
+  var flush = function (done) {
+    var self = this;
+
+    tmp.forEach(function (file) {
+      self.push(file);
+    });
+
+    done();
+  }
+
+  return through.obj(parse, flush);
 }
