@@ -1,20 +1,27 @@
+var _ = require('underscore');
 var addStream = require('add-stream');
-var gulp = require('gulp');
-var nodemon = require('gulp-nodemon');
-var inject = require('gulp-inject');
+var browserSync = require('browser-sync').create();
 var concat = require('gulp-concat');
 var concatCss = require('gulp-concat-css');
 var cssNano = require('gulp-cssnano');
+var del = require('del');
+var gulp = require('gulp');
+var inject = require('gulp-inject');
+var nodemon = require('gulp-nodemon');
+var path = require('path');
 var rename = require('gulp-rename');
+var sass = require('gulp-sass');
 var sourceMaps = require('gulp-sourcemaps');
 var templateCache = require('gulp-angular-templatecache');
 var ts = require('gulp-typescript');
 var tslint = require('gulp-tslint');
 var uglify = require('gulp-uglify');
-var sass = require('gulp-sass');
-var path = require('path');
 var wiredep = require('wiredep').stream;
-var _ = require('underscore');
+
+// Clean the dist folder
+gulp.task('clean', function () {
+  return del('public/dist/**');
+});
 
 // Lint to keep us in line
 gulp.task('lint', function () {
@@ -47,7 +54,7 @@ gulp.task('sass', function () {
 
 gulp.task('concatCss', ['sass'], function () {
   return gulp.src('public/dist/css/**/*.css')
-    .pipe(concatCss("app.css"))
+    .pipe(concatCss('app.css'))
     .pipe(gulp.dest('public/dist'))
 });
 
@@ -62,7 +69,6 @@ gulp.task('cssNano', ['sass', 'concatCss'], function () {
 
 // Inject dist + bower lib files
 gulp.task('inject', ['scripts', 'cssNano'], function () {
-
   // inject our dist files
   var injectSrc = gulp.src([
     './public/dist/app.css',
@@ -89,55 +95,36 @@ gulp.task('inject', ['scripts', 'cssNano'], function () {
 
 });
 
-gulp.task('serve', ['scripts', 'cssNano', 'inject'], function () {
+gulp.task('compile', ['lint', 'scripts', 'sass', 'concatCss', 'cssNano']);
+gulp.task('compile-w', ['compile'], function (done) {
+  browserSync.reload();
+  done();
+});
 
-  var options = {
-    restartable: "rs",
-    verbose: true,
-    ext: "ts html scss",
-    script: 'server.js',
-    delayTime: 1,
-    watch: ['public/src/**/*(*.ts|*.html)', 'public/src/**/*.scss'],
-    env: {
-      'PORT': 3000
-    },
-    ignore: ["public/dist/*", "public/dist/**/**"],
-    // bit faster if we only do what we need to
-    tasks: function (changedFiles) {
-      var tasks = [];
-      changedFiles.forEach(function (file) {
-        var ext = path.extname(file);
-        if (ext === '.ts' || ext === '.html') {
-          tasks.push('lint');
-          tasks.push('scripts');
-        } else if (ext === '.scss') {
-          tasks.push('sass');
-          tasks.push('concatCss');
-          tasks.push('cssNano');
-        }
-      });
-      return tasks
-    }
-  };
+gulp.task('build', ['compile', 'inject']);
 
-  return nodemon(options)
-    .on('restart', function (ev) {
-      console.log('restarting..');
-    });
+gulp.task('serve', ['build'], function () {
+  browserSync.init({
+    server: 'public',
+    ui: false
+  });
+
+  // watch
+  gulp.watch(['public/src/**/*(*.ts|*.html|*.scss)'], ['compile-w']);
 });
 
 // Default Task
-gulp.task('default', ['lint', 'scripts', 'sass', 'concatCss', 'cssNano', 'inject', 'serve']);
+gulp.task('default', ['serve']);
+
 
 function prepareTemplates() {
-
   // we get a conflict with the < % = var % > syntax for $templateCache
   // template header, so we'll just encode values to keep yo happy
-  var encodedHeader = "angular.module(&quot;&lt;%= module %&gt;&quot;&lt;%= standalone %&gt;).run([&quot;$templateCache&quot;, function($templateCache:any) {";
+  var encodedHeader = 'angular.module(&quot;&lt;%= module %&gt;&quot;&lt;%= standalone %&gt;).run([&quot;$templateCache&quot;, function($templateCache:any) {';
   return gulp.src('public/src/**/*.html')
     .pipe(templateCache('templates.ts', {
-      // root: "app-templates",
-      module: "app.templates",
+      // root: 'app-templates',
+      module: 'app.templates',
       standalone: true,
       templateHeader: _.unescape(encodedHeader)
     }));
