@@ -175,7 +175,7 @@ gulp.task('serve', ['build'], function () {
 });
 
 // Default Task
-gulp.task('default', ['serve']);
+gulp.task('default', ['clean', 'serve']);
 
 
 function prepareTemplates() {
