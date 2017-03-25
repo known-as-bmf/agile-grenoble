@@ -42,5 +42,6 @@ jspm_packages
 # bower
 public/lib
 
-# dist
+# build & dist
+public/build
 public/dist

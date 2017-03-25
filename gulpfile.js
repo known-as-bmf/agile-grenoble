@@ -1,27 +1,68 @@
-var _ = require('underscore');
-var addStream = require('add-stream');
-var browserSync = require('browser-sync').create();
-var concat = require('gulp-concat');
-var concatCss = require('gulp-concat-css');
-var cssNano = require('gulp-cssnano');
-var del = require('del');
-var gulp = require('gulp');
-var inject = require('gulp-inject');
-var nodemon = require('gulp-nodemon');
-var path = require('path');
-var rename = require('gulp-rename');
-var sass = require('gulp-sass');
-var sourceMaps = require('gulp-sourcemaps');
-var templateCache = require('gulp-angular-templatecache');
-var through = require('through2');
-var ts = require('gulp-typescript');
-var tslint = require('gulp-tslint');
-var uglify = require('gulp-uglify');
-var wiredep = require('wiredep').stream;
+// TODO: split into multiple files: https://github.com/betsol/gulp-require-tasks
+const addStream = require('add-stream');
+const browserSync = require('browser-sync').create();
+const concat = require('gulp-concat');
+const concatCss = require('gulp-concat-css');
+const cssNano = require('gulp-cssnano');
+const del = require('del');
+const filter = require('gulp-filter');
+const gulp = require('gulp');
+const htmlmin = require('gulp-htmlmin');
+const inject = require('gulp-inject');
+const ngAnnotate = require('gulp-ng-annotate');
+const path = require('path');
+const rename = require('gulp-rename');
+const sass = require('gulp-sass');
+const sourceMaps = require('gulp-sourcemaps');
+const templateCache = require('gulp-angular-templatecache');
+const through = require('through2');
+const ts = require('gulp-typescript');
+const tslint = require('gulp-tslint');
+const uglify = require('gulp-uglify');
+const useref = require('gulp-useref');
+const wiredep = require('wiredep').stream;
+const debug = require('gulp-debug');
 
-// Clean the dist folder
+const annotateOptions = {
+  remove: true,
+  add: true,
+  single_quotes: true
+};
+
+const htmlminOptions = {
+  collapseWhitespace: true,
+  conservativeCollapse: true
+};
+
+const browserSyncOptions = {
+  server: {
+    baseDir: 'public/build',
+    routes: {
+      "/lib": "public/lib",
+      "/images": "public/images"
+    }
+  },
+  ui: false
+};
+
+const injectOptions = {
+  ignorePath: '/public/build',
+  // addRootSlash: false
+};
+
+const wiredepOptions = {
+  directory: 'public/lib',
+  ignorePath: '../'
+};
+
+const userefOptions = {
+  searchPath: ['public/build', 'public'],
+  // noconcat: true
+};
+
+// Clean the dist & build folder
 gulp.task('clean', function () {
-  return del('public/dist/**');
+  return del(['public/build/**', 'public/dist/**']);
 });
 
 // Lint to keep us in line
@@ -36,73 +77,87 @@ gulp.task('scripts', function () {
   var tsProject = ts.createProject('tsconfig.json');
 
   return gulp.src('public/src/**/*.ts')
-    .pipe(addStream.obj(prepareTemplates()))
     .pipe(sourceMaps.init())
-    .pipe(tsProject())
-    .pipe(gulp.dest('public/dist'))
-    .pipe(rename('app.min.js'))
-    .pipe(uglify())
+    .pipe(tsProject()) // compile ts
+    .pipe(addStream.obj(prepareTemplates())) // append templatecache
+    .pipe(ngAnnotate(annotateOptions)) // add angular dependency injection
     .pipe(sourceMaps.write('.'))
-    .pipe(gulp.dest('public/dist'));
+    .pipe(gulp.dest('public/build'));
 });
 
 // Compile, concat & minify sass
 gulp.task('sass', function () {
   return gulp.src('public/src/**/*.scss')
     .pipe(sass().on('error', sass.logError))
-    .pipe(gulp.dest('public/dist/css'));
+    .pipe(gulp.dest('public/build'));
 });
 
-gulp.task('concatCss', ['sass'], function () {
-  return gulp.src('public/dist/css/**/*.css')
-    .pipe(concatCss('app.css'))
-    .pipe(gulp.dest('public/dist'))
-});
-
-gulp.task('cssNano', ['sass', 'concatCss'], function () {
-  return gulp.src('public/dist/app.css')
-    .pipe(cssNano())
-    .pipe(rename({
-      suffix: '.min'
-    }))
-    .pipe(gulp.dest('public/dist'));
-});
-
-// Inject dist + bower lib files
-gulp.task('inject', ['scripts', 'cssNano'], function () {
-  // inject our dist files
-  var injectSrc = gulp.src([
-    './public/dist/app.css',
-    './public/dist/app.js'
-  ], {
-    read: false
-  });
-
-  var injectOptions = {
-    ignorePath: '/public'
-  };
-
-  // inject bower deps
-  var options = {
-    bowerJson: require('./bower.json'),
-    directory: './public/lib',
-    ignorePath: '../../public'
-  };
-
-  return gulp.src('public/*.html')
-    .pipe(wiredep(options))
-    .pipe(inject(injectSrc, injectOptions))
-    .pipe(gulp.dest('public'));
-
-});
+gulp.task('styles', ['sass']);
 
 gulp.task('i18n', function () {
   return gulp.src('public/src/**/i18n/*.json')
     .pipe(i18n())
-    .pipe(gulp.dest('public/dist/i18n'))
+    .pipe(gulp.dest('public/build/i18n'))
 })
 
-gulp.task('compile', ['lint', 'scripts', 'sass', 'concatCss', 'cssNano']);
+// Inject build + bower lib files
+gulp.task('inject', ['scripts', 'styles'], function () {
+  // inject our build files
+  var injectSrc = gulp.src([
+    'public/build/**/*.css',
+    'public/build/**/*.js'
+  ], {
+    read: false
+  });
+
+  // inject bower deps
+  var options = Object.assign({
+      bowerJson: require('./bower.json')
+    },
+    wiredepOptions
+  );
+
+  return gulp.src('public/src/*.html')
+    .pipe(wiredep(options))
+    .pipe(inject(injectSrc, injectOptions))
+    .pipe(gulp.dest('public/build'));
+});
+
+gulp.task('images', function () {
+  return gulp.src(['public/images/**'])
+    .pipe(gulp.dest('public/dist/images'));
+});
+
+gulp.task('fonts', function () {
+  return gulp.src(['public/lib/font-awesome/fonts/**'])
+    .pipe(gulp.dest('public/dist/fonts'));
+});
+
+// bundles the application into one self-contained directory
+gulp.task('dist', ['build', 'images', 'fonts'], function () {
+  const css = filter('**/*.css', {
+    restore: true
+  });
+  const js = filter('**/*.js', {
+    restore: true
+  });
+
+  return gulp.src('public/build/index.html')
+    .pipe(useref(userefOptions))
+
+    // css minification
+    .pipe(css)
+    .pipe(cssNano())
+    .pipe(css.restore)
+    // js minification
+    .pipe(js)
+    .pipe(uglify())
+    .pipe(js.restore)
+
+    .pipe(gulp.dest('public/dist'));
+});
+
+gulp.task('compile', ['lint', 'scripts', 'styles']);
 gulp.task('compile-w', ['compile'], function (done) {
   browserSync.reload();
   done();
@@ -111,10 +166,7 @@ gulp.task('compile-w', ['compile'], function (done) {
 gulp.task('build', ['compile', 'inject']);
 
 gulp.task('serve', ['build'], function () {
-  browserSync.init({
-    server: 'public',
-    ui: false
-  });
+  browserSync.init(browserSyncOptions);
 
   // watch
   gulp.watch(['public/src/**/*(*.ts|*.html|*.scss)'], ['compile-w']);
@@ -127,15 +179,11 @@ gulp.task('default', ['serve']);
 
 
 function prepareTemplates() {
-  // we get a conflict with the < % = var % > syntax for $templateCache
-  // template header, so we'll just encode values to keep yo happy
-  var encodedHeader = 'angular.module(&quot;&lt;%= module %&gt;&quot;&lt;%= standalone %&gt;).run([&quot;$templateCache&quot;, function($templateCache:any) {';
   return gulp.src('public/src/**/*.html')
-    .pipe(templateCache('templates.ts', {
-      // root: 'app-templates',
+    .pipe(htmlmin(htmlminOptions))
+    .pipe(templateCache('templates.js', {
       module: 'app.templates',
-      standalone: true,
-      templateHeader: _.unescape(encodedHeader)
+      standalone: true
     }));
 }
 
@@ -165,7 +213,7 @@ function i18n() {
     var self = this;
 
     tmp.forEach(function (file) {
-      self.push(file);
+      // self.push(file);
     });
 
     done();
