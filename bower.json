@@ -9,13 +9,6 @@
     "foundation-sites": "^6.3.1"
   },
   "overrides": {
-    "bootstrap": {
-      "main": [
-        "less/bootstrap.less",
-        "dist/css/bootstrap.css",
-        "dist/js/bootstrap.js"
-      ]
-    },
     "foundation-sites": {
       "main": [
         "dist/css/foundation.css",
