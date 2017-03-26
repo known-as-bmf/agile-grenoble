@@ -1,16 +1,20 @@
 // TODO: split into multiple files: https://github.com/betsol/gulp-require-tasks
+// TODO: use lazypipe to refactor https://github.com/OverZealous/lazypipe
 const addStream = require('add-stream');
 const browserSync = require('browser-sync').create();
 const concat = require('gulp-concat');
 const concatCss = require('gulp-concat-css');
-const cssNano = require('gulp-cssnano');
+const csso = require('gulp-csso');
+const debug = require('gulp-debug');
 const del = require('del');
 const filter = require('gulp-filter');
 const gulp = require('gulp');
 const htmlmin = require('gulp-htmlmin');
+const imagemin = require('gulp-imagemin');
 const inject = require('gulp-inject');
 const ngAnnotate = require('gulp-ng-annotate');
 const path = require('path');
+const purify = require('gulp-purifycss');
 const rename = require('gulp-rename');
 const sass = require('gulp-sass');
 const sourceMaps = require('gulp-sourcemaps');
@@ -21,7 +25,6 @@ const tslint = require('gulp-tslint');
 const uglify = require('gulp-uglify');
 const useref = require('gulp-useref');
 const wiredep = require('wiredep').stream;
-const debug = require('gulp-debug');
 
 const annotateOptions = {
   remove: true,
@@ -86,13 +89,11 @@ gulp.task('scripts', function () {
 });
 
 // Compile, concat & minify sass
-gulp.task('sass', function () {
+gulp.task('styles', function () {
   return gulp.src('public/src/**/*.scss')
     .pipe(sass().on('error', sass.logError))
     .pipe(gulp.dest('public/build'));
 });
-
-gulp.task('styles', ['sass']);
 
 gulp.task('i18n', function () {
   return gulp.src('public/src/**/i18n/*.json')
@@ -123,18 +124,22 @@ gulp.task('inject', ['scripts', 'styles'], function () {
     .pipe(gulp.dest('public/build'));
 });
 
-gulp.task('images', function () {
+gulp.task('images', ['build', 'package'], function () {
   return gulp.src(['public/images/**'])
+    .pipe(imagemin())
     .pipe(gulp.dest('public/dist/images'));
 });
 
-gulp.task('fonts', function () {
-  return gulp.src(['public/lib/font-awesome/fonts/**'])
+gulp.task('fonts', ['build', 'package'], function () {
+  return gulp.src(['public/lib/font-awesome/fonts/*.{eot,svg,ttf,woff,woff2}'])
     .pipe(gulp.dest('public/dist/fonts'));
 });
 
 // bundles the application into one self-contained directory
-gulp.task('dist', ['build', 'images', 'fonts'], function () {
+gulp.task('package', ['build'], function () {
+  const html = filter('**/*.html', {
+    restore: true
+  });
   const css = filter('**/*.css', {
     restore: true
   });
@@ -145,14 +150,23 @@ gulp.task('dist', ['build', 'images', 'fonts'], function () {
   return gulp.src('public/build/index.html')
     .pipe(useref(userefOptions))
 
+    .pipe(sourceMaps.init())
+
+    // html minification
+    .pipe(html)
+    .pipe(htmlmin(htmlminOptions))
+    .pipe(html.restore)
     // css minification
     .pipe(css)
-    .pipe(cssNano())
+    .pipe(purify(['public/build/**/*.js', 'public/src/**/*.html']))
+    .pipe(csso())
     .pipe(css.restore)
     // js minification
     .pipe(js)
     .pipe(uglify())
     .pipe(js.restore)
+
+    .pipe(sourceMaps.write('.'))
 
     .pipe(gulp.dest('public/dist'));
 });
@@ -164,6 +178,7 @@ gulp.task('compile-w', ['compile'], function (done) {
 });
 
 gulp.task('build', ['compile', 'inject']);
+gulp.task('dist', ['package', 'images', 'fonts']);
 
 gulp.task('serve', ['build'], function () {
   browserSync.init(browserSyncOptions);
@@ -175,7 +190,7 @@ gulp.task('serve', ['build'], function () {
 });
 
 // Default Task
-gulp.task('default', ['clean', 'serve']);
+gulp.task('default', ['serve']);
 
 
 function prepareTemplates() {
