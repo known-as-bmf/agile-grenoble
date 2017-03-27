@@ -168,6 +168,11 @@ gulp.task('package', ['build'], function () {
 
     .pipe(sourceMaps.write('.'))
 
+    // add i18n files to the stream
+    .pipe(addStream.obj(gulp.src('public/build/i18n/**', {
+      base: './public/build'
+    })))
+
     .pipe(gulp.dest('public/dist'));
 });
 
