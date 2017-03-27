@@ -13,7 +13,10 @@ angular
     $urlRouterProvider.otherwise('/home');
     // translation config
     $translateProvider.useStaticFilesLoader({
-      prefix: 'string',
-      suffix: 'string'
+      prefix: 'i18n/',
+      suffix: '.json'
     });
+
+    // $translateProvider.preferredLanguage('en_US');
+    $translateProvider.preferredLanguage('fr_FR');
   });

@@ -171,7 +171,7 @@ gulp.task('package', ['build'], function () {
     .pipe(gulp.dest('public/dist'));
 });
 
-gulp.task('compile', ['lint', 'scripts', 'styles']);
+gulp.task('compile', ['lint', 'scripts', 'styles', 'i18n']);
 gulp.task('compile-w', ['compile'], function (done) {
   browserSync.reload();
   done();
@@ -205,9 +205,12 @@ function prepareTemplates() {
 // see https://github.com/baijunjie/gulp-i18n-combine/blob/master/index.js
 // TODO: make it a gulp module
 // rename "merge-same-name" ?
+
+const File = require('vinyl');
+
 function i18n() {
 
-  var tmp = [];
+  var i18n = {};
 
   // parse input files (a list of many <locale>.json)
   // from a glob like 'public/**/i18n/*.json'
@@ -218,17 +221,22 @@ function i18n() {
       return;
     }
 
-    tmp.push(file);
+    var relativeParts = file.relative.split(path.sep);
+    var locale = relativeParts.pop();
+    i18n[locale] = i18n[locale] || {};
+
+    Object.assign(i18n[locale], JSON.parse(file.contents.toString()));
 
     done();
   }
 
   // output files (1 <locale>.json per locale)
   var flush = function (done) {
-    var self = this;
-
-    tmp.forEach(function (file) {
-      // self.push(file);
+    Object.keys(i18n).forEach((file) => {
+      this.push(new File({
+        path: file,
+        contents: new Buffer(JSON.stringify(i18n[file]))
+      }));
     });
 
     done();
