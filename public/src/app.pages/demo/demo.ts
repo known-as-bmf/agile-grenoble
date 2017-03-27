@@ -6,31 +6,13 @@ module app.pages {
   export class DemoCtrl implements IDemoCtrl {
     constructor(
       private $scope: ng.IScope,
-      private demoService: IDemoService
+      private demoService: services.IDemoService
     ) { }
-  }
-
-  export interface IDemoService {
-    toggleExcited(): void;
-    isExcited(): boolean;
-  }
-
-  export class DemoService implements IDemoService {
-    private excited: boolean = false;
-
-    toggleExcited(): void {
-      this.excited = !this.excited;
-    }
-
-    isExcited(): boolean {
-      return this.excited;
-    }
   }
 
   angular
     .module('app.pages')
     .controller('demoCtrl', DemoCtrl)
-    .service('demoService', DemoService)
     .config(($stateProvider: ng.ui.IStateProvider) => {
       $stateProvider.state('shell.demo', {
         url: '/demo',

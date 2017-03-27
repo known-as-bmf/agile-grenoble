@@ -1,9 +1,12 @@
 angular
   .module('app', [
+    // vendor dependancies
     'ui.router',
-    'app.pages',
+    'pascalprecht.translate',
+    // app
     'app.templates',
-    'pascalprecht.translate'
+    'app.pages',
+    'app.services',
   ])
   .config((
     $urlRouterProvider: ng.ui.IUrlRouterProvider,
