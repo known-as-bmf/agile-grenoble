@@ -3,10 +3,12 @@ angular
     // vendor dependancies
     'ui.router',
     'pascalprecht.translate',
+    'duScroll',
     // app
     'app.templates',
     'app.pages',
-    'app.services',
+    'app.directives',
+    'app.services'
   ])
   .config((
     $urlRouterProvider: ng.ui.IUrlRouterProvider,
