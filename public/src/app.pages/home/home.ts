@@ -4,9 +4,15 @@ module app.pages {
   class HomeCtrl {
 
     constructor(
-      private $scope: ng.IScope
+      private $scope: ng.IScope,
+      private $log: ng.ILogService,
+      private koraliService: services.IKoraliService
     ) {
-      this.text = 'Lolilol';
+      koraliService.test3()
+        .then((result: any) => {
+          $log.debug(result);
+          this.text = JSON.stringify(result);
+        });
     }
 
     private text: string;
