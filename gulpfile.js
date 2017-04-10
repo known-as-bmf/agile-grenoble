@@ -13,6 +13,7 @@ const htmlmin = require('gulp-htmlmin');
 const imagemin = require('gulp-imagemin');
 const inject = require('gulp-inject');
 const ngAnnotate = require('gulp-ng-annotate');
+const order = require('gulp-order');
 const path = require('path');
 const purify = require('gulp-purifycss');
 const rename = require('gulp-rename');
@@ -47,6 +48,12 @@ const browserSyncOptions = {
   },
   ui: false
 };
+
+const orderOptions = [
+  '**/app.js',
+  '**/app.*.js',
+  '**/*.js'
+]
 
 const injectOptions = {
   ignorePath: '/public/build',
@@ -105,11 +112,12 @@ gulp.task('i18n', function () {
 gulp.task('inject', ['scripts', 'styles'], function () {
   // inject our build files
   var injectSrc = gulp.src([
-    'public/build/**/*.css',
-    'public/build/**/*.js'
-  ], {
-    read: false
-  });
+      'public/build/**/*.css',
+      'public/build/**/*.js'
+    ], {
+      read: false
+    })
+    .pipe(order(orderOptions));
 
   // inject bower deps
   var options = Object.assign({
