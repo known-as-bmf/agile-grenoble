@@ -1,13 +1,13 @@
 <!--<div class="row">-->
-  <nav class="row column hide-for-large" sticky>
-    <ul class="horizontal menu expanded">
-      <li><a du-smooth-scroll="title" du-scrollspy="title" offset="40">title</a></li>
-      <li><a du-smooth-scroll="contacts" du-scrollspy="contacts" offset="40">contacts</a></li>
-      <li><a du-smooth-scroll="contacts2" du-scrollspy="contacts2" offset="40">contacts2</a></li>
-      <li><a du-smooth-scroll="contacts3" du-scrollspy="contacts3" offset="40">contacts3</a></li>
-      <li><a du-smooth-scroll="cara" du-scrollspy="cara" offset="40">cara</a></li>
-    </ul>
-  </nav>
+<nav class="row column hide-for-large home__menu" sticky>
+  <ul class="horizontal menu expanded">
+    <li><a du-smooth-scroll="title" du-scrollspy="title" offset="40">title</a></li>
+    <li><a du-smooth-scroll="contacts2" du-scrollspy="contacts2" offset="40">contacts2</a></li>
+    <li><a du-smooth-scroll="spotlight" du-scrollspy="spotlight" offset="40">spotlight</a></li>
+    <li><a du-smooth-scroll="contacts" du-scrollspy="contacts" offset="40">contacts</a></li>
+    <li><a du-smooth-scroll="cara" du-scrollspy="cara" offset="40">cara</a></li>
+  </ul>
+</nav>
 <!--</div>-->
 <div class="row" id="lol">
   <div class="column medium-12 large-9">
@@ -15,47 +15,6 @@
       <div class="row column text-center">
         <h1 translate="test"></h1>
         <span>{{ vm.text }}</span>
-      </div>
-    </section>
-    <section id="contacts" class="row home__contacts">
-      <div class="row column text-center">
-        <div class="contacts__title">
-          <h2>Contacts</h2>
-        </div>
-      </div>
-      <div class="row">
-        <a class="column small-12 medium-6 large-3 text-center contacts__item">
-          <div class="contacts__item--icon">
-            <span class="fa fa-users"></span>
-          </div>
-          <div class="contacts__item--text">
-            <span>Je veux m'inscrire</span>
-          </div>
-        </a>
-        <a class="column small-12 medium-6 large-3 text-center contacts__item">
-          <div class="contacts__item--icon">
-            <span class="fa fa-comment"></span>
-          </div>
-          <div class="contacts__item--text">
-            <span>Je veux être orateur</span>
-          </div>
-        </a>
-        <a class="column small-12 medium-6 large-3 text-center contacts__item">
-          <div class="contacts__item--icon">
-            <span class="fa fa-usd"></span>
-          </div>
-          <div class="contacts__item--text">
-            <span>Je veux être sponsor</span>
-          </div>
-        </a>
-        <a class="column small-12 medium-6 large-3 text-center contacts__item">
-          <div class="contacts__item--icon">
-            <span class="fa fa-question-circle"></span>
-          </div>
-          <div class="contacts__item--text">
-            <span>Je veux poser une question</span>
-          </div>
-        </a>
       </div>
     </section>
     <section id="contacts2" class="row home__contacts">
@@ -99,7 +58,43 @@
         </a>
       </div>
     </section>
-    <section id="contacts3" class="row home__contacts">
+    <section id="spotlight" class="row home__spotlight">
+      <div class="row column text-center">
+        <div class="spotlight__title">
+          <h2>Spotlight</h2>
+        </div>
+      </div>
+      <div class="row">
+        <a class="column small-12 medium-6 text-center spotlight__item">
+          <div class="spotlight__item--image">
+            <img src="http://placehold.it/200x200">
+          </div>
+          <div class="spotlight__item--text">
+            <span>Jean Neige</span>
+            <span>description de jean nia nia nia</span>
+          </div>
+        </a>
+        <a class="column small-12 medium-6 text-center spotlight__item">
+          <div class="spotlight__item--image">
+            <img src="http://placehold.it/200x200">
+          </div>
+          <div class="spotlight__item--text">
+            <span>Jean Neige-DeLaGrange</span>
+            <span>description de jean nia nia nia</span>
+          </div>
+        </a>
+        <a class="column small-12 medium-6 text-center spotlight__item">
+          <div class="spotlight__item--image">
+            <img src="http://placehold.it/200x200">
+          </div>
+          <div class="spotlight__item--text">
+            <span>Paul Pilpoil</span>
+            <span>description de paul nia nia nia</span>
+          </div>
+        </a>
+      </div>
+    </section>
+    <section id="contacts" class="row home__contacts">
       <div class="row column text-center">
         <div class="contacts__title">
           <h2>Contacts</h2>
@@ -164,9 +159,9 @@
   <nav class="column show-for-large large-3" sticky offset="20">
     <ul class="vertical menu">
       <li><a du-smooth-scroll="title" du-scrollspy="title">title</a></li>
-      <li><a du-smooth-scroll="contacts" du-scrollspy="contacts">contacts</a></li>
       <li><a du-smooth-scroll="contacts2" du-scrollspy="contacts2">contacts2</a></li>
-      <li><a du-smooth-scroll="contacts3" du-scrollspy="contacts3">contacts3</a></li>
+      <li><a du-smooth-scroll="spotlight" du-scrollspy="spotlight">spotlight</a></li>
+      <li><a du-smooth-scroll="contacts" du-scrollspy="contacts">contacts</a></li>
       <li><a du-smooth-scroll="cara" du-scrollspy="cara">cara</a></li>
     </ul>
   </nav>

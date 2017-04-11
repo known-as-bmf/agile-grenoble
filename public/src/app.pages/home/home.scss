@@ -1,10 +1,19 @@
-.home__contacts {
-  &.callout {
-    background-color: #41485C;
-    color: #E1E2E6;
-    margin: 0;
-    padding: 1.5rem;
+.home__spotlight {
+  .spotlight {
+    &__item {
+      &--image {
+        img {
+          border-radius: 50%;
+        }
+      }
+      &--text {
+        color: red;
+      }
+    }
   }
+}
+
+.home__contacts {
   .contacts {
     &__item {
       &:hover {
@@ -23,10 +32,6 @@
 }
 
 .home__cara {
-  &.callout {
-    margin: 0;
-    padding: 1.5rem;
-  }
   .cara__website {
     .button {
       margin: 0;
